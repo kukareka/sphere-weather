@@ -49,7 +49,7 @@ Example:
           <paper-input label="Add city:" id="newCityName" class="flex"></paper-input>
           <paper-button on-click="addCity">Go</paper-button>
       </div>
-      <paper-tabs selected="{{selected}}">
+      <paper-tabs selected="{{selected}}" on-selected-changed="saveSelected">
           <template is="dom-repeat" id="tabs" items="{{cities}}">
               <paper-tab>
                   <div>{{item.name}}</div>
@@ -75,19 +75,24 @@ Example:
 
     // Element Lifecycle
 
-    ready: function() {
-        this.cities = [
-            {
-                name: 'New York',
-                weather: 'Weather in New York'
-            },
-            {
-                name: 'Kiev',
-                weather: 'Weather in Kiev'
-            }
-        ];
+    defaultOptions: {
+        cities: [
+          {
+              name: 'New York',
+              weather: 'Weather in New York'
+          },
+          {
+              name: 'Kiev',
+              weather: 'Weather in Kiev'
+          }
+        ],
+        selected: 0
+    },
 
-        this.selected = 0
+    ready: function() {
+        var options = this.loadOptions();
+        this.cities = options.cities
+        this.selected = options.selected;
 
     },
 
@@ -108,21 +113,45 @@ Example:
     },
 
     // Element Behavior
+    loadOptions: function() {
+        var cities;
+        try
+        {
+            cities = JSON.parse(localStorage.getItem("spree-weather-cities"));
+        }
+        catch (err)
+        {
+            localStorage.removeItem("spree-weather-cities");
+        }
 
+        return {
+          cities: cities || this.defaultOptions.cities,
+          selected: localStorage.getItem("spree-weather-selected") || this.defaultOptions.selected
+        }
+    },
+
+    saveCities: function()
+    {
+        localStorage.setItem("spree-weather-cities", JSON.stringify(this.cities));
+    },
+
+    saveSelected: function()
+    {
+        localStorage.setItem("spree-weather-selected", this.selected);
+    },
 
     addCity: function() {
         var cityName = this.$.newCityName.value;
         this.push('cities', {name: cityName, weather: 'Weather in ' + cityName});
+        this.set('selected', this.cities.length - 1);
+        this.saveCities();
     },
 
     removeCity: function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var itemIndex = this.$.tabs.indexForElement(e.target)
-        this.splice('cities', itemIndex, 1)
-        return false;
+        var itemIndex = this.$.tabs.indexForElement(e.target);
+        this.splice('cities', itemIndex, 1);
+        this.saveCities();
     }
-
   });
 
 </script>
