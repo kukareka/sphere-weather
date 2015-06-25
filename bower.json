@@ -1,0 +1,29 @@
+{
+  "name": "sphere-weather",
+  "version": "1.0.0",
+  "authors": [
+    "Oleg Kukareka <oleg@kukareka.com>"
+  ],
+  "description": "Sphere weather component.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "seed"
+  ],
+  "main": "spree-weather.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/kukareka/sphere-weather/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}
