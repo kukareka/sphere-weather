@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -35,6 +36,7 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
+      padding: 16px;
       @apply(--layout-vertical);
     }
 
@@ -86,18 +88,24 @@ Example:
         white-space: nowrap;
     }
 
-    paper-tab {
-        @apply(--layout-self-center);
+    [city] [error] {
+        color: #a00;
     }
 
-    paper-tab .close {
-        position: absolute;
-        top: 0;
-        right: 0;
+    paper-tab {
+        @apply(--layout-justified);
+    }
+
+    paper-tab [city] {
+        @apply(--layout-center-center);
+    }
+
+    paper-tab [close] {
+        margin-left: 4px;
         font-weight: normal !important;
     }
 
-    paper-tab .close:hover {
+    paper-tab [close]:hover {
         text-shadow: 2px 2px 3px #888;
     }
 
@@ -123,14 +131,16 @@ Example:
       <paper-tabs selected="{{selected}}" on-selected-changed="saveSelected" scrollable>
           <template is="dom-repeat" id="tabs" items="[[cities]]">
               <paper-tab>
-                  <span>[[item.name]]</span>
-                  <template is="dom-if" if="[[item.country]]">
-                      <span country>[[item.country]]</span>
-                  </template>
-                  <template is="dom-if" if="[[!item.loaded]]">
-                      <paper-spinner alt="Loading weather" active></paper-spinner>
-                  </template>
-                  <div class="close" on-click="removeCity">&times;</div>
+                  <div city>
+                      <span>[[item.name]]</span>
+                      <template is="dom-if" if="[[item.country]]">
+                          <span country>[[item.country]]</span>
+                      </template>
+                      <template is="dom-if" if="[[!item.loaded]]">
+                          <paper-spinner alt="Loading weather" active></paper-spinner>
+                      </template>
+                  </div>
+                  <div close on-click="removeCity">&times;</div>
               </paper-tab>
           </template>
       </paper-tabs>
@@ -165,7 +175,10 @@ Example:
                           </div>
                       </template>
                       <template is="dom-if" if="[[!item.success]]">
-                          Error
+                         <div error>
+                             <iron-icon icon="error"></iron-icon>
+                             Failed to load weather for &laquo;<span>[[item.name]]</span>&raquo;.
+                         </div>
                       </template>
                   </template>
               </div>

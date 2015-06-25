@@ -15,9 +15,7 @@
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/kukareka/sphere-weather/",
   "ignore": [
-    "/.*",
-    "/test/",
-    "/demo/"
+    "/.*"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
