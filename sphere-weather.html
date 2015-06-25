@@ -132,7 +132,7 @@ Example:
           <template is="dom-repeat" id="tabs" items="[[cities]]">
               <paper-tab>
                   <div city>
-                      <span>[[item.name]]</span>
+                      <span city-name>[[item.name]]</span>
                       <template is="dom-if" if="[[item.country]]">
                           <span country>[[item.country]]</span>
                       </template>
@@ -229,11 +229,11 @@ Example:
         var cities;
         try
         {
-            cities = JSON.parse(localStorage.getItem("spree-weather-cities"));
+            cities = JSON.parse(localStorage.getItem("sphere-weather-cities"));
         }
         catch (err)
         {
-            localStorage.removeItem("spree-weather-cities");
+            localStorage.removeItem("sphere-weather-cities");
         }
 
         cities = cities || this.defaultOptions.cities;
@@ -243,17 +243,17 @@ Example:
 
         return {
           cities: cities,
-          selected: localStorage.getItem("spree-weather-selected") || this.defaultOptions.selected
+          selected: localStorage.getItem("sphere-weather-selected") || this.defaultOptions.selected
         }
     },
 
     saveCities: function() {
         cities = this.cities.map(function(city) {return city.name});
-        localStorage.setItem("spree-weather-cities", JSON.stringify(cities));
+        localStorage.setItem("sphere-weather-cities", JSON.stringify(cities));
     },
 
     saveSelected: function() {
-        localStorage.setItem("spree-weather-selected", this.selected);
+        localStorage.setItem("sphere-weather-selected", this.selected);
     },
 
     createCity: function(name) {
@@ -264,7 +264,7 @@ Example:
     },
 
     addCity: function() {
-        if (this.$.newCityName.invalid) return;
+        if (this.$.newCityName.invalid) return false;
         var cityName = this.$.newCityName.value;
         this.$.newCityName.value = ''
         this.push('cities', this.createCity(cityName));

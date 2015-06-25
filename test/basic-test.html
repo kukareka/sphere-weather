@@ -17,36 +17,99 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../web-component-tester/browser.js"></script>
 
     <!-- Step 1: import the element to test -->
-    <link rel="import" href="../seed-element.html">
+    <link rel="import" href="../sphere-weather.html">
   </head>
   <body>
 
-    <!-- You can use the document as a place to set up your fixtures. -->
-    <seed-element></seed-element>
+    <sphere-weather></sphere-weather>
 
     <script>
-      var myEl = document.querySelector('seed-element');
+      var myEl = document.querySelector('sphere-weather');
 
-      suite('<seed-element>', function() {
+      var _showWeather = myEl.showWeather;
 
-        test('defines the "author" property', function() {
-          assert.equal(myEl.author.name, 'Dimitri Glazkov');
-          assert.equal(myEl.author.image, 'http://addyosmani.com/blog/wp-content/uploads/2013/04/unicorn.jpg');
+      function getPaperTabs()
+      {
+         return myEl.querySelectorAll('paper-tab');
+      }
+
+      suite('<sphere-weather>', function() {
+        teardown(function() {localStorage.removeItem("sphere-weather-cities");});
+
+        test('loads weather for default cities', function(done) {
+            setTimeout(function () {
+                var paperTabs = getPaperTabs();
+                expect(paperTabs.length).to.equal(2);
+                var paperTab = paperTabs[0];
+                expect(paperTab.querySelector('[city-name]').textContent)
+                        .to.equal('New York');
+                expect(paperTab.querySelector('[country]').textContent)
+                        .to.equal('US')
+                done();
+            }, 1000);
         });
 
-        test('says hello', function() {
-          assert.equal(myEl.sayHello(), 'seed-element says, Hello World!');
+        test('adds new city', function(done) {
+            myEl.showWeather = function(e) {
+                _showWeather.call(myEl, e);
+                setTimeout(function(){
+                    var paperTabs = getPaperTabs();
+                    expect(paperTabs.length).to.equal(3);
+                    var paperTab = paperTabs[2]
+                    expect(paperTab.querySelector('[city-name]').textContent)
+                            .to.equal('Moscow');
+                    expect(paperTab.querySelector('[country]').textContent)
+                            .to.equal('RU');
+                    done();
+                }, 1000);
+            };
 
-          var greetings = myEl.sayHello('greetings Earthlings');
-          assert.equal(greetings, 'seed-element says, greetings Earthlings');
+            myEl.$.newCityName.value = 'moscow';
+            myEl.addCity();
         });
 
-        test('fires lasers', function(done) {
-          myEl.addEventListener('seed-element-lasers', function(event) {
-            assert.equal(event.detail.sound, 'Pew pew!');
-            done();
-          });
-          myEl.fireLasers();
+        test('validates city name', function(done) {
+          myEl.$.newCityName.value = '12345';
+          myEl.addCity();
+          setTimeout(function() {
+              var paperTabs = getPaperTabs();
+              expect(myEl.$.newCityName.invalid).to.equal(true);
+              expect(paperTabs.length).to.equal(3);
+              expect(myEl.cities.length).to.equal(3);
+              done();
+          }, 1000);
+        });
+
+        test('shows error if city was not found', function(done) {
+          myEl.showWeather = function(e) {
+            _showWeather.call(myEl, e);
+            setTimeout(function(){
+                var paperTabs = getPaperTabs();
+                expect(paperTabs.length).to.equal(4);
+                var paperTab = paperTabs[3];
+                expect(myEl.cities[3].name)
+                        .to.equal('someinexistentcity');
+                expect(myEl.cities[3].success)
+                        .to.equal(false);
+                expect(myEl.querySelector('iron-pages [city] [error]').textContent.trim())
+                        .to.equal('Failed to load weather for «someinexistentcity».');
+                done();
+            }, 1000);
+          };
+
+          myEl.$.newCityName.value = 'someinexistentcity';
+          myEl.addCity();
+        });
+
+        test('removes city', function(done) {
+          var paperTabs = getPaperTabs();
+          expect(paperTabs.length).to.equal(4);
+          myEl.removeCity({target: myEl.querySelector('[close]')});
+          setTimeout(function() {
+              var paperTabs = getPaperTabs();
+              expect(paperTabs.length).to.equal(3);
+              done();
+          }, 1000);
         });
 
       });
