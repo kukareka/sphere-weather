@@ -1,3 +1,5 @@
+[![build status](https://circleci.com/gh/:owner/:repo/tree/:branch.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/:owner/:repo/tree/:branch)
+
 # seed-element
 
 An element providing a starting point for your own reusable Polymer elements.
