@@ -35,6 +35,13 @@ Example:
     [header] {
         @apply(--layout-horizontal);
     }
+
+    paper-tab .close {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
   </style>
 
   <template>
@@ -42,9 +49,12 @@ Example:
           <paper-input label="Add city:" id="newCityName" class="flex"></paper-input>
           <paper-button on-click="addCity">Go</paper-button>
       </div>
-      <paper-tabs id="tabs" selected="{{selected}}">
-          <template is="dom-repeat" items="{{cities}}">
-              <paper-tab>{{item.name}}</paper-tab>
+      <paper-tabs selected="{{selected}}">
+          <template is="dom-repeat" id="tabs" items="{{cities}}">
+              <paper-tab>
+                  <div>{{item.name}}</div>
+                  <div class="close" on-click="removeCity">&times;</div>
+              </paper-tab>
           </template>
       </paper-tabs>
 
@@ -103,6 +113,14 @@ Example:
     addCity: function() {
         var cityName = this.$.newCityName.value;
         this.push('cities', {name: cityName, weather: 'Weather in ' + cityName});
+    },
+
+    removeCity: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var itemIndex = this.$.tabs.indexForElement(e.target)
+        this.splice('cities', itemIndex, 1)
+        return false;
     }
 
   });
