@@ -13,6 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 
 <!--
@@ -68,11 +69,21 @@ Example:
                           on-response="showWeather"
                           >
                   </iron-ajax>
-                  <div weather>
-                      <h2>Weather in&nbsp;<span>[[item.name]]</span>, <span>[[item.country]]</span></h2>
-                      <div class="temperature">[[item.temperature]]</div>
-                      <div class="description">[[item.description]]</div>
-                  </div>
+                  <template is="dom-if" if="[[item.loaded]]">
+                      <template is="dom-if" if="[[item.success]]">
+                          <div weather>
+                              <h2>Weather in&nbsp;<span>[[item.name]]</span>, <span>[[item.country]]</span></h2>
+                              <div class="temperature">[[item.temperature]]</div>
+                              <div class="description">[[item.description]]</div>
+                          </div>
+                      </template>
+                      <template is="dom-if" if="[[!item.success]]">
+                          Error
+                      </template>
+                  </template>
+                  <template is="dom-if" if="[[!item.loaded]]">
+                      <paper-spinner alt="Loading weather" active></paper-spinner>
+                  </template>
               </paper-tab>
           </template>
       </iron-pages>
@@ -118,7 +129,6 @@ Example:
 
     // Element Behavior
     loadOptions: function() {
-        localStorage.removeItem("spree-weather-cities");
         var cities;
         try
         {
@@ -170,13 +180,24 @@ Example:
     },
 
     showWeather: function(e) {
-        var response = e.target.lastResponse;
-        var itemIndex = this.$.pages.indexForElement(e.target);
+        var ajax = e.target
+        var response = ajax.lastResponse;
+        var itemIndex = this.$.pages.indexForElement(ajax);
         var cityWithIndex = 'cities.' + itemIndex;
-        this.set(cityWithIndex + '.name', response.name);
-        this.set(cityWithIndex + '.country', response.sys.country);
-        this.set(cityWithIndex + '.temperature', response.main.temp);
-        this.set(cityWithIndex + '.description', response.weather[0].description);
+        this.set(cityWithIndex + '.loaded', true);
+        // For some magical reason, openweathermap.org returns 200 if city was not found.
+        // But returns 404 in response.cod.
+        if (ajax.lastRequest.succeeded && (response.cod == 200)) {
+            this.set(cityWithIndex + '.success', true);
+            this.set(cityWithIndex + '.name', response.name);
+            this.set(cityWithIndex + '.country', response.sys.country);
+            this.set(cityWithIndex + '.temperature', response.main.temp);
+            this.set(cityWithIndex + '.description', response.weather[0].description);
+        }
+        else
+        {
+            this.set(cityWithIndex + '.success', false)
+        }
     }
   });
 
