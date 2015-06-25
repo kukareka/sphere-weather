@@ -26,11 +26,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
       var myEl = document.querySelector('sphere-weather');
 
-      var _showWeather = myEl.showWeather;
-
       function getPaperTabs()
       {
          return myEl.querySelectorAll('paper-tab');
+      }
+
+      function afterShowWeather(callback)
+      {
+          window._showWeather = window._showWeather || myEl.showWeather;
+          myEl.showWeather = function(e) {
+              _showWeather.call(myEl, e);
+              setTimeout(callback, 1000);
+          }
       }
 
       suite('<sphere-weather>', function() {
@@ -50,19 +57,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('adds new city', function(done) {
-            myEl.showWeather = function(e) {
-                _showWeather.call(myEl, e);
-                setTimeout(function(){
-                    var paperTabs = getPaperTabs();
-                    expect(paperTabs.length).to.equal(3);
-                    var paperTab = paperTabs[2]
-                    expect(paperTab.querySelector('[city-name]').textContent)
-                            .to.equal('Moscow');
-                    expect(paperTab.querySelector('[country]').textContent)
-                            .to.equal('RU');
-                    done();
-                }, 1000);
-            };
+            afterShowWeather(function(e) {
+                var paperTabs = getPaperTabs();
+                expect(paperTabs.length).to.equal(3);
+                var paperTab = paperTabs[2]
+                expect(paperTab.querySelector('[city-name]').textContent)
+                        .to.equal('Moscow');
+                expect(paperTab.querySelector('[country]').textContent)
+                        .to.equal('RU');
+                done();
+            });
 
             myEl.$.newCityName.value = 'moscow';
             myEl.addCity();
@@ -81,9 +85,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('shows error if city was not found', function(done) {
-          myEl.showWeather = function(e) {
-            _showWeather.call(myEl, e);
-            setTimeout(function(){
+            afterShowWeather(function(){
                 var paperTabs = getPaperTabs();
                 expect(paperTabs.length).to.equal(4);
                 var paperTab = paperTabs[3];
@@ -94,8 +96,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 expect(myEl.querySelector('iron-pages [city] [error]').textContent.trim())
                         .to.equal('Failed to load weather for «someinexistentcity».');
                 done();
-            }, 1000);
-          };
+            });
 
           myEl.$.newCityName.value = 'someinexistentcity';
           myEl.addCity();
