@@ -1,4 +1,4 @@
-[![build status](https://circleci.com/gh/:owner/:repo/tree/:branch.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/:owner/:repo/tree/:branch)
+[![build status](https://circleci.com/gh/kukareka/sphere-weather/tree/master.svg?style=shield&circle-token=1c6805a71d2119080cad94be68baa4f2be863c23)](https://circleci.com/gh/kukareka/sphere-weather/tree/master)
 
 # seed-element
 
