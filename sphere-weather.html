@@ -8,10 +8,14 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer-themes/ice.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-fab/paper-fab.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-spinner/paper-spinner.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
@@ -34,26 +38,98 @@ Example:
       @apply(--layout-vertical);
     }
 
+    h2 {
+        font-size: 20px;
+    }
+
     [header] {
         @apply(--layout-horizontal);
+    }
+
+    [city], h2 {
+        text-align: center;
+        margin-top: 16px;
+    }
+
+
+    [city] [weather] {
+        display: inline-block;
+    }
+
+    [city] [weather] [summary] {
+        @apply(--layout-horizontal);
+    }
+
+    [city] [weather] [summary] img {
+        width: 50px;
+        height: 50px;
+    }
+
+    [city] [weather] [summary] .temperature {
+        font-size: 30px;
+        line-height: 50px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+
+    [city] [weather] dl {
+        text-align: left;
+    }
+
+    [city] [weather] dl dt {
+        float: left;
+        margin-right: 8px;
+        color: #999;
+    }
+
+    [city] [weather] dl dd {
+        white-space: nowrap;
+    }
+
+    paper-tab {
+        @apply(--layout-self-center);
     }
 
     paper-tab .close {
         position: absolute;
         top: 0;
         right: 0;
+        font-weight: normal !important;
+    }
+
+    paper-tab .close:hover {
+        text-shadow: 2px 2px 3px #888;
+    }
+
+    paper-tab [country] {
+        margin: 0 14px 0 6px;
+        font-size: 110%;
+        color: #999;
+    }
+
+    paper-tab paper-spinner {
+        margin-left: 8px;
     }
 
   </style>
   <template>
       <div header>
-          <paper-input label="Add city:" id="newCityName" class="flex"></paper-input>
-          <paper-button on-click="addCity">Go</paper-button>
+          <paper-input placeholder="Add city..." id="newCityName" no-label-float class="flex"
+                       auto-validate pattern="[a-zA-Z,\s]*" error-message="Example: 'London' or 'London, UK'.">
+          </paper-input>
+          <iron-a11y-keys target="{{newCityName}}" keys="enter" on-keys-pressed="addCity"></iron-a11y-keys>
+          <paper-fab icon="add" on-click="addCity" mini></paper-fab>
       </div>
-      <paper-tabs selected="{{selected}}" on-selected-changed="saveSelected">
+      <paper-tabs selected="{{selected}}" on-selected-changed="saveSelected" scrollable>
           <template is="dom-repeat" id="tabs" items="[[cities]]">
               <paper-tab>
-                  <div>[[item.name]]</div>
+                  <span>[[item.name]]</span>
+                  <template is="dom-if" if="[[item.country]]">
+                      <span country>[[item.country]]</span>
+                  </template>
+                  <template is="dom-if" if="[[!item.loaded]]">
+                      <paper-spinner alt="Loading weather" active></paper-spinner>
+                  </template>
                   <div class="close" on-click="removeCity">&times;</div>
               </paper-tab>
           </template>
@@ -61,30 +137,38 @@ Example:
 
       <iron-pages selected="{{selected}}">
           <template is="dom-repeat" id="pages" items="{{cities}}">
-              <paper-tab>
+              <div city>
                   <iron-ajax
                           auto
                           url="[[item.url]]"
                           handle-as="json"
-                          on-response="showWeather"
-                          >
+                          on-response="showWeather">
                   </iron-ajax>
                   <template is="dom-if" if="[[item.loaded]]">
                       <template is="dom-if" if="[[item.success]]">
                           <div weather>
-                              <h2>Weather in&nbsp;<span>[[item.name]]</span>, <span>[[item.country]]</span></h2>
-                              <div class="temperature">[[item.temperature]]</div>
-                              <div class="description">[[item.description]]</div>
+                              <h2><span>[[item.name]]</span>, <span>[[item.country]]</span></h2>
+                              <div summary>
+                                  <img src="{{item.image}}">
+                                  <div class="temperature"><span>[[item.temperature]]</span>°C</div>
+                              </div>
+                              <dl>
+                                  <dt>General</dt>
+                                  <dd>{{item.general}}</dd>
+
+                                  <dt>Perssure</dt>
+                                  <dd>{{item.pressure}}</dd>
+
+                                  <dt>Humidity</dt>
+                                  <dd>{{item.humidity}}</dd>
+                              </dl>
                           </div>
                       </template>
                       <template is="dom-if" if="[[!item.success]]">
                           Error
                       </template>
                   </template>
-                  <template is="dom-if" if="[[!item.loaded]]">
-                      <paper-spinner alt="Loading weather" active></paper-spinner>
-                  </template>
-              </paper-tab>
+              </div>
           </template>
       </iron-pages>
   </template>
@@ -167,7 +251,9 @@ Example:
     },
 
     addCity: function() {
+        if (this.$.newCityName.invalid) return;
         var cityName = this.$.newCityName.value;
+        this.$.newCityName.value = ''
         this.push('cities', this.createCity(cityName));
         this.set('selected', this.cities.length - 1);
         this.saveCities();
@@ -176,6 +262,9 @@ Example:
     removeCity: function(e) {
         var itemIndex = this.$.tabs.indexForElement(e.target);
         this.splice('cities', itemIndex, 1);
+        if (this.selected == itemIndex) {
+            this.set('selected', 0);
+        }
         this.saveCities();
     },
 
@@ -191,8 +280,14 @@ Example:
             this.set(cityWithIndex + '.success', true);
             this.set(cityWithIndex + '.name', response.name);
             this.set(cityWithIndex + '.country', response.sys.country);
-            this.set(cityWithIndex + '.temperature', response.main.temp);
-            this.set(cityWithIndex + '.description', response.weather[0].description);
+            this.set(cityWithIndex + '.temperature', Math.round(response.main.temp));
+            this.set(cityWithIndex + '.pressure', Math.round(response.main.pressure) + ' hPa');
+            this.set(cityWithIndex + '.humidity', Math.round(response.main.humidity) + '%');
+
+            weather = response.weather[0];
+            this.set(cityWithIndex + '.image',
+                    'http://openweathermap.org/img/w/' + weather.icon + '.png');
+            this.set(cityWithIndex + '.general', weather.main);
         }
         else
         {

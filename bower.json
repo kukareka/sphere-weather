@@ -26,7 +26,10 @@
     "paper-input": "git@github.com:PolymerElements/paper-input#^1.0.5",
     "paper-button": "git@github.com:PolymerElements/paper-button#^1.0.1",
     "iron-flex-layout": "git@github.com:PolymerElements/iron-flex-layout#^1.0.1",
-    "paper-spinner": "git@github.com:PolymerElements/paper-spinner#^1.0.1"
+    "paper-spinner": "git@github.com:PolymerElements/paper-spinner#^1.0.1",
+    "polymer-themes": "PolymerThemes/polymer-themes#^1.0.1",
+    "paper-fab": "git@github.com:PolymerElements/paper-fab#^1.0.2",
+    "iron-a11y-keys": "git@github.com:PolymerElements/iron-a11y-keys#^1.0.1"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
