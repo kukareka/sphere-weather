@@ -8,6 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-button/paper-button.html">
@@ -43,24 +44,36 @@ Example:
     }
 
   </style>
-
   <template>
       <div header>
           <paper-input label="Add city:" id="newCityName" class="flex"></paper-input>
           <paper-button on-click="addCity">Go</paper-button>
       </div>
       <paper-tabs selected="{{selected}}" on-selected-changed="saveSelected">
-          <template is="dom-repeat" id="tabs" items="{{cities}}">
+          <template is="dom-repeat" id="tabs" items="[[cities]]">
               <paper-tab>
-                  <div>{{item.name}}</div>
+                  <div>[[item.name]]</div>
                   <div class="close" on-click="removeCity">&times;</div>
               </paper-tab>
           </template>
       </paper-tabs>
 
-      <iron-pages id="pages" selected="{{selected}}">
-          <template is="dom-repeat" items="{{cities}}">
-              <paper-tab>{{item.weather}}</paper-tab>
+      <iron-pages selected="{{selected}}">
+          <template is="dom-repeat" id="pages" items="{{cities}}">
+              <paper-tab>
+                  <iron-ajax
+                          auto
+                          url="[[item.url]]"
+                          handle-as="json"
+                          on-response="showWeather"
+                          >
+                  </iron-ajax>
+                  <div weather>
+                      <h2>Weather in&nbsp;<span>[[item.name]]</span>, <span>[[item.country]]</span></h2>
+                      <div class="temperature">[[item.temperature]]</div>
+                      <div class="description">[[item.description]]</div>
+                  </div>
+              </paper-tab>
           </template>
       </iron-pages>
   </template>
@@ -76,16 +89,7 @@ Example:
     // Element Lifecycle
 
     defaultOptions: {
-        cities: [
-          {
-              name: 'New York',
-              weather: 'Weather in New York'
-          },
-          {
-              name: 'Kiev',
-              weather: 'Weather in Kiev'
-          }
-        ],
+        cities: ['New York', 'Kiev'],
         selected: 0
     },
 
@@ -114,6 +118,7 @@ Example:
 
     // Element Behavior
     loadOptions: function() {
+        localStorage.removeItem("spree-weather-cities");
         var cities;
         try
         {
@@ -124,25 +129,36 @@ Example:
             localStorage.removeItem("spree-weather-cities");
         }
 
+        cities = cities || this.defaultOptions.cities;
+
+        var self = this
+        cities = cities.map(function(name) {return self.createCity(name)});
+
         return {
-          cities: cities || this.defaultOptions.cities,
+          cities: cities,
           selected: localStorage.getItem("spree-weather-selected") || this.defaultOptions.selected
         }
     },
 
-    saveCities: function()
-    {
-        localStorage.setItem("spree-weather-cities", JSON.stringify(this.cities));
+    saveCities: function() {
+        cities = this.cities.map(function(city) {return city.name});
+        localStorage.setItem("spree-weather-cities", JSON.stringify(cities));
     },
 
-    saveSelected: function()
-    {
+    saveSelected: function() {
         localStorage.setItem("spree-weather-selected", this.selected);
+    },
+
+    createCity: function(name) {
+        return {
+            name: name,
+            url: "http://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(name) + "&units=metric"
+        }
     },
 
     addCity: function() {
         var cityName = this.$.newCityName.value;
-        this.push('cities', {name: cityName, weather: 'Weather in ' + cityName});
+        this.push('cities', this.createCity(cityName));
         this.set('selected', this.cities.length - 1);
         this.saveCities();
     },
@@ -151,6 +167,16 @@ Example:
         var itemIndex = this.$.tabs.indexForElement(e.target);
         this.splice('cities', itemIndex, 1);
         this.saveCities();
+    },
+
+    showWeather: function(e) {
+        var response = e.target.lastResponse;
+        var itemIndex = this.$.pages.indexForElement(e.target);
+        var cityWithIndex = 'cities.' + itemIndex;
+        this.set(cityWithIndex + '.name', response.name);
+        this.set(cityWithIndex + '.country', response.sys.country);
+        this.set(cityWithIndex + '.temperature', response.main.temp);
+        this.set(cityWithIndex + '.description', response.weather[0].description);
     }
   });
 
