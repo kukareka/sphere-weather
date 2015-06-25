@@ -21,7 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body>
 
-    <sphere-weather></sphere-weather>
+    <sphere-weather stateless></sphere-weather>
 
     <script>
       var myEl = document.querySelector('sphere-weather');
@@ -41,8 +41,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       suite('<sphere-weather>', function() {
-        teardown(function() {localStorage.removeItem("sphere-weather-cities");});
-
         test('loads weather for default cities', function(done) {
             setTimeout(function () {
                 var paperTabs = getPaperTabs();
