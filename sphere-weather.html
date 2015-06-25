@@ -8,6 +8,11 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-pages/iron-flex-layout.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
 
 <!--
 An element providing a solution to no problem in particular.
@@ -24,24 +29,30 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
+      @apply(--layout-vertical);
     }
 
-    .author img {
-      float: left;
-      margin-right: 5px;
-      max-height: 100px;
-      max-width: 100px;
+    [header] {
+        @apply(--layout-horizontal);
     }
   </style>
 
   <template>
-    <h1>&lt;seed-element&gt;</h1>
-    <content></content>
-    <p class="author">
-      <img src="{{author.image}}">
-      Cheers,<br/>
-      <span class="name">{{author.name}}</span>
-    </p>
+      <div header>
+          <paper-input label="Add city:" class="flex"></paper-input>
+          <paper-button>Go</paper-button>
+      </div>
+      <paper-tabs selected="{{selected}}">
+          <paper-tab>Tab 1</paper-tab>
+          <paper-tab>Tab 2</paper-tab>
+          <paper-tab>Tab 3</paper-tab>
+      </paper-tabs>
+
+      <iron-pages selected="{{selected}}">
+          <div>Page 1</div>
+          <div>Page 2</div>
+          <div>Page 3</div>
+      </iron-pages>
   </template>
 
 </dom-module>
