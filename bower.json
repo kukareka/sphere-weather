@@ -11,7 +11,7 @@
     "polymer",
     "seed"
   ],
-  "main": "spree-weather.html",
+  "main": "sphere-weather.html",
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/kukareka/sphere-weather/",
   "ignore": [
