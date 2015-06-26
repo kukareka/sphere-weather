@@ -194,6 +194,10 @@ Example:
 
     is: 'sphere-weather',
 
+    properties: {
+        stateless: Boolean
+    },
+
     // Element Lifecycle
 
     defaultOptions: {
@@ -208,32 +212,16 @@ Example:
 
     },
 
-    attached: function() {
-      // `attached` fires once the element and its parents have been inserted
-      // into a document.
-      //
-      // This is a good place to perform any work related to your element's
-      // visual state or active behavior (measuring sizes, beginning animations,
-      // loading resources, etc).
-    },
-
-    detached: function() {
-      // The analog to `attached`, `detached` fires when the element has been
-      // removed from a document.
-      //
-      // Use this to clean up anything you did in `attached`.
-    },
-
     // Element Behavior
     loadOptions: function() {
         var cities;
-        try
-        {
-            cities = JSON.parse(localStorage.getItem("sphere-weather-cities"));
-        }
-        catch (err)
-        {
-            localStorage.removeItem("sphere-weather-cities");
+        if (!this.stateless) {
+            try {
+                cities = JSON.parse(localStorage.getItem("sphere-weather-cities"));
+            }
+            catch (err) {
+                localStorage.removeItem("sphere-weather-cities");
+            }
         }
 
         cities = cities || this.defaultOptions.cities;
@@ -243,16 +231,18 @@ Example:
 
         return {
           cities: cities,
-          selected: localStorage.getItem("sphere-weather-selected") || this.defaultOptions.selected
+          selected: (!this.stateless && localStorage.getItem("sphere-weather-selected")) || this.defaultOptions.selected
         }
     },
 
     saveCities: function() {
+        if (this.stateless) return false;
         cities = this.cities.map(function(city) {return city.name});
         localStorage.setItem("sphere-weather-cities", JSON.stringify(cities));
     },
 
     saveSelected: function() {
+        if (this.stateless) return false;
         localStorage.setItem("sphere-weather-selected", this.selected);
     },
 

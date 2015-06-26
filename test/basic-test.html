@@ -21,10 +21,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body>
 
-    <sphere-weather></sphere-weather>
+    <sphere-weather stateless></sphere-weather>
 
     <script>
       var myEl = document.querySelector('sphere-weather');
+
+      var timeout = 2500;
 
       function getPaperTabs()
       {
@@ -36,13 +38,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           window._showWeather = window._showWeather || myEl.showWeather;
           myEl.showWeather = function(e) {
               _showWeather.call(myEl, e);
-              setTimeout(callback, 1000);
+              setTimeout(callback, timeout);
           }
       }
 
       suite('<sphere-weather>', function() {
-        teardown(function() {localStorage.removeItem("sphere-weather-cities");});
-
         test('loads weather for default cities', function(done) {
             setTimeout(function () {
                 var paperTabs = getPaperTabs();
@@ -53,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 expect(paperTab.querySelector('[country]').textContent)
                         .to.equal('US')
                 done();
-            }, 1000);
+            }, timeout);
         });
 
         test('adds new city', function(done) {
@@ -81,7 +81,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               expect(paperTabs.length).to.equal(3);
               expect(myEl.cities.length).to.equal(3);
               done();
-          }, 1000);
+          }, timeout);
         });
 
         test('shows error if city was not found', function(done) {
@@ -110,7 +110,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var paperTabs = getPaperTabs();
               expect(paperTabs.length).to.equal(3);
               done();
-          }, 1000);
+          }, timeout);
         });
 
       });
