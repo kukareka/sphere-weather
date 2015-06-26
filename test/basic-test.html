@@ -26,6 +26,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
       var myEl = document.querySelector('sphere-weather');
 
+      var timeout = 5000;
+
       function getPaperTabs()
       {
          return myEl.querySelectorAll('paper-tab');
@@ -36,7 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           window._showWeather = window._showWeather || myEl.showWeather;
           myEl.showWeather = function(e) {
               _showWeather.call(myEl, e);
-              setTimeout(callback, 1000);
+              setTimeout(callback, timeout);
           }
       }
 
@@ -51,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 expect(paperTab.querySelector('[country]').textContent)
                         .to.equal('US')
                 done();
-            }, 1000);
+            }, timeout);
         });
 
         test('adds new city', function(done) {
@@ -79,7 +81,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               expect(paperTabs.length).to.equal(3);
               expect(myEl.cities.length).to.equal(3);
               done();
-          }, 1000);
+          }, timeout);
         });
 
         test('shows error if city was not found', function(done) {
@@ -108,7 +110,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var paperTabs = getPaperTabs();
               expect(paperTabs.length).to.equal(3);
               done();
-          }, 1000);
+          }, timeout);
         });
 
       });
