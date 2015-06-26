@@ -1,5 +1,5 @@
 bower_components
-components
+components/sphere-weather/components
 node_modules
 .idea
 *.log

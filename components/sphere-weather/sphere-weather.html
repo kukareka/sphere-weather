@@ -1,0 +1,302 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer-themes/ice.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-fab/paper-fab.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="sphere-weather">
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+      padding: 16px;
+      @apply(--layout-vertical);
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    [header] {
+        @apply(--layout-horizontal);
+    }
+
+    [city], h2 {
+        text-align: center;
+        margin-top: 16px;
+    }
+
+
+    [city] [weather] {
+        display: inline-block;
+    }
+
+    [city] [weather] [summary] {
+        @apply(--layout-horizontal);
+    }
+
+    [city] [weather] [summary] img {
+        width: 50px;
+        height: 50px;
+    }
+
+    [city] [weather] [summary] .temperature {
+        font-size: 30px;
+        line-height: 50px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+
+    [city] [weather] dl {
+        text-align: left;
+    }
+
+    [city] [weather] dl dt {
+        float: left;
+        margin-right: 8px;
+        color: #999;
+    }
+
+    [city] [weather] dl dd {
+        white-space: nowrap;
+    }
+
+    [city] [error] {
+        color: #a00;
+    }
+
+    paper-tab {
+        @apply(--layout-justified);
+    }
+
+    paper-tab [city] {
+        @apply(--layout-center-center);
+    }
+
+    paper-tab [close] {
+        margin-left: 4px;
+        font-weight: normal !important;
+    }
+
+    paper-tab [close]:hover {
+        text-shadow: 2px 2px 3px #888;
+    }
+
+    paper-tab [country] {
+        margin: 0 14px 0 6px;
+        font-size: 110%;
+        color: #999;
+    }
+
+    paper-tab paper-spinner {
+        margin-left: 8px;
+    }
+
+  </style>
+  <template>
+      <div header>
+          <paper-input placeholder="Add city..." id="newCityName" no-label-float class="flex"
+                       auto-validate pattern="[a-zA-Z,\s]*" error-message="Example: 'London' or 'London, UK'.">
+          </paper-input>
+          <iron-a11y-keys target="{{newCityName}}" keys="enter" on-keys-pressed="addCity"></iron-a11y-keys>
+          <paper-fab icon="add" on-click="addCity" mini></paper-fab>
+      </div>
+      <paper-tabs selected="{{selected}}" on-selected-changed="saveSelected" scrollable>
+          <template is="dom-repeat" id="tabs" items="[[cities]]">
+              <paper-tab>
+                  <div city>
+                      <span city-name>[[item.name]]</span>
+                      <template is="dom-if" if="[[item.country]]">
+                          <span country>[[item.country]]</span>
+                      </template>
+                      <template is="dom-if" if="[[!item.loaded]]">
+                          <paper-spinner alt="Loading weather" active></paper-spinner>
+                      </template>
+                  </div>
+                  <div close on-click="removeCity">&times;</div>
+              </paper-tab>
+          </template>
+      </paper-tabs>
+
+      <iron-pages selected="{{selected}}">
+          <template is="dom-repeat" id="pages" items="{{cities}}">
+              <div city>
+                  <iron-ajax
+                          auto
+                          url="[[item.url]]"
+                          handle-as="json"
+                          on-response="showWeather">
+                  </iron-ajax>
+                  <template is="dom-if" if="[[item.loaded]]">
+                      <template is="dom-if" if="[[item.success]]">
+                          <div weather>
+                              <h2><span>[[item.name]]</span>, <span>[[item.country]]</span></h2>
+                              <div summary>
+                                  <img src="{{item.image}}">
+                                  <div class="temperature"><span>[[item.temperature]]</span>°C</div>
+                              </div>
+                              <dl>
+                                  <dt>General</dt>
+                                  <dd>{{item.general}}</dd>
+
+                                  <dt>Perssure</dt>
+                                  <dd>{{item.pressure}}</dd>
+
+                                  <dt>Humidity</dt>
+                                  <dd>{{item.humidity}}</dd>
+                              </dl>
+                          </div>
+                      </template>
+                      <template is="dom-if" if="[[!item.success]]">
+                         <div error>
+                             <iron-icon icon="error"></iron-icon>
+                             Failed to load weather for &laquo;<span>[[item.name]]</span>&raquo;.
+                         </div>
+                      </template>
+                  </template>
+              </div>
+          </template>
+      </iron-pages>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'sphere-weather',
+
+    properties: {
+        stateless: Boolean
+    },
+
+    // Element Lifecycle
+
+    defaultOptions: {
+        cities: ['New York', 'Kiev'],
+        selected: 0
+    },
+
+    ready: function() {
+        var options = this.loadOptions();
+        this.cities = options.cities
+        this.selected = options.selected;
+
+    },
+
+    // Element Behavior
+    loadOptions: function() {
+        var cities;
+        if (!this.stateless) {
+            try {
+                cities = JSON.parse(localStorage.getItem("sphere-weather-cities"));
+            }
+            catch (err) {
+                localStorage.removeItem("sphere-weather-cities");
+            }
+        }
+
+        cities = cities || this.defaultOptions.cities;
+
+        var self = this
+        cities = cities.map(function(name) {return self.createCity(name)});
+
+        return {
+          cities: cities,
+          selected: (!this.stateless && localStorage.getItem("sphere-weather-selected")) || this.defaultOptions.selected
+        }
+    },
+
+    saveCities: function() {
+        if (this.stateless) return false;
+        cities = this.cities.map(function(city) {return city.name});
+        localStorage.setItem("sphere-weather-cities", JSON.stringify(cities));
+    },
+
+    saveSelected: function() {
+        if (this.stateless) return false;
+        localStorage.setItem("sphere-weather-selected", this.selected);
+    },
+
+    createCity: function(name) {
+        return {
+            name: name,
+            url: "http://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(name) + "&units=metric"
+        }
+    },
+
+    addCity: function() {
+        if (this.$.newCityName.invalid) return false;
+        var cityName = this.$.newCityName.value;
+        this.$.newCityName.value = ''
+        this.push('cities', this.createCity(cityName));
+        this.set('selected', this.cities.length - 1);
+        this.saveCities();
+    },
+
+    removeCity: function(e) {
+        var itemIndex = this.$.tabs.indexForElement(e.target);
+        this.splice('cities', itemIndex, 1);
+        if (this.selected == itemIndex) {
+            this.set('selected', 0);
+        }
+        this.saveCities();
+    },
+
+    showWeather: function(e) {
+        var ajax = e.target
+        var response = ajax.lastResponse;
+        var itemIndex = this.$.pages.indexForElement(ajax);
+        var cityWithIndex = 'cities.' + itemIndex;
+        this.set(cityWithIndex + '.loaded', true);
+        // For some magical reason, openweathermap.org returns 200 if city was not found.
+        // But returns 404 in response.cod.
+        if (ajax.lastRequest.succeeded && (response.cod == 200)) {
+            this.set(cityWithIndex + '.success', true);
+            this.set(cityWithIndex + '.name', response.name);
+            this.set(cityWithIndex + '.country', response.sys.country);
+            this.set(cityWithIndex + '.temperature', Math.round(response.main.temp));
+            this.set(cityWithIndex + '.pressure', Math.round(response.main.pressure) + ' hPa');
+            this.set(cityWithIndex + '.humidity', Math.round(response.main.humidity) + '%');
+
+            weather = response.weather[0];
+            this.set(cityWithIndex + '.image',
+                    'http://openweathermap.org/img/w/' + weather.icon + '.png');
+            this.set(cityWithIndex + '.general', weather.main);
+        }
+        else
+        {
+            this.set(cityWithIndex + '.success', false)
+        }
+    }
+  });
+
+</script>
