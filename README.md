@@ -45,7 +45,7 @@ Sample code to embed the element:
 
 Use this link to run the tests online: 
 
-http://kukareka.github.io/sphere-weather/components/sphere-weather/demo/index.html
+http://kukareka.github.io/sphere-weather/components/sphere-weather/test/index.html
 
 If you are using Polyserve: `http://localhost:8080/components/seed-element/test/`
 
