@@ -249,7 +249,9 @@ Example:
     createCity: function(name) {
         return {
             name: name,
-            url: "http://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(name) + "&units=metric"
+            url: "http://api.openweathermap.org/data/2.5/weather?q=" +
+                encodeURIComponent(name) +
+                    "&units=metric&APPID=c91c5af93f84027c33deec046b47db88"
         }
     },
 
